@@ -9,38 +9,24 @@ import java.util.Scanner;
 // THIS CLASS HAS NOT BEEN TESTED
 public class CSVParser {
 
-    private static final char DEFAULT_SEPARATOR = ',';
-    private static final char DEFAULT_QUOTE = '"';
-    private String csvFile;
+    private final char DEFAULT_SEPARATOR = ',';
+    private final char DEFAULT_QUOTE = '\"';
+    private Scanner scanner;
 
-    public CSVParser(String filename) {
-        Scanner scanner;
-
-        csvFile = filename;
-
-        try {
-            scanner = new Scanner(new File(csvFile));
-        } catch (FileNotFoundException e) {
-            System.out.println("Unable to open " + csvFile);
-            return;
-        }
-
-        while (scanner.hasNext()) {
-            List<String> line = parseLine(scanner.nextLine());
-            // do stuff here to add data to Players
-        }
-        scanner.close();
+    public CSVParser(String filename) throws FileNotFoundException {
+        scanner = new Scanner(new File(filename));
     }
 
-    public static List<String> parseLine(String csvLine) {
-        return parseLine(csvLine, DEFAULT_SEPARATOR, DEFAULT_QUOTE);
+    public  List<String> parseLine() {
+        return parseLine(DEFAULT_SEPARATOR, DEFAULT_QUOTE);
     }
 
-    public static List<String> parseLine(String csvLine, char  separators) {
-        return parseLine(csvLine, separators, DEFAULT_QUOTE);
+    public List<String> parseLine(char separators) {
+        return parseLine(separators, DEFAULT_QUOTE);
     }
 
-    public static List<String> parseLine(String csvLine, char separators, char customQuote) {
+    public  List<String> parseLine(char separators, char customQuote) {
+        String csvLine = scanner.nextLine();
         List<String> result = new ArrayList<>();
         StringBuffer curVal = new StringBuffer();
         boolean inQuotes = false;
@@ -70,7 +56,7 @@ public class CSVParser {
                     inQuotes = false;
                     doubleQuotesInColumn = false;
                 } else {
-                    if (ch == '"') {
+                    if (ch == '\"') {
                         if (!doubleQuotesInColumn) {
                             curVal.append(ch);
                             doubleQuotesInColumn = true;
@@ -83,18 +69,18 @@ public class CSVParser {
                 if (ch == customQuote) {
                     inQuotes = true;
 
-                    if (chars[0] != '"' && customQuote == '"') {
-                        curVal.append('"');
+                    if (chars[0] != '\"' && customQuote == '\"') {
+                        curVal.append('\"');
                     }
 
                     if (startCollectChar) {
-                        curVal.append('"');
+                        curVal.append('\"');
                     }
                 } else if (ch == separators) {
+                    result.add(curVal.toString());
+
                     curVal = new StringBuffer();
                     startCollectChar = false;
-
-                    result.add(curVal.toString());
                 } else if (ch == '\r') { // ignore LF characters
                     continue;
                 } else if (ch == '\n') {
@@ -107,5 +93,9 @@ public class CSVParser {
         result.add(curVal.toString());
 
         return result;
+    }
+
+    public boolean hasNextLine() {
+        return scanner.hasNextLine();
     }
 }
